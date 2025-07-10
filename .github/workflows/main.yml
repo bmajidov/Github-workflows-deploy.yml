@@ -1,0 +1,34 @@
+name: Deploy Smart Contracts
+
+on:
+  workflow_dispatch: # Bu workflow ni qo'lda boshlash imkonini beradi
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install
+          npm install -g hardhat
+
+      - name: Deploy Contracts
+        run: |
+          cd scripts
+          npx hardhat run deploy.js --network mumbai
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Save contract addresses
+        run: |
+          echo "DIAMOND_ADDRESS=$DEPLOYED_ADDRESS" >> $GITHUB_ENV
+        if: steps.deploy.outputs.contractAddress
